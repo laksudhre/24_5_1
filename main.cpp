@@ -10,11 +10,11 @@ void endTask(std::map<std::string, std::pair<std::time_t, std::time_t>> &tasks) 
 }
 
 void newTask(std::map<std::string, std::pair<std::time_t, std::time_t>> &tasks) {
+    std::string task_name;
+    std::cin >> task_name;
     if (!tasks.empty() && tasks.rbegin()->second.second == tasks.rbegin()->second.first) {
         endTask(tasks);
     }
-    std::string task_name;
-    std::cin >> task_name;
     const std::time_t current_time = std::time(nullptr);
     tasks[task_name].first = current_time;
     tasks[task_name].second = current_time;
@@ -22,6 +22,7 @@ void newTask(std::map<std::string, std::pair<std::time_t, std::time_t>> &tasks) 
 }
 
 void showTasks(const std::map<std::string, std::pair<std::time_t, std::time_t>> &tasks) {
+    std::cout << "---------------------------------------------------------" << std::endl;
     for (const auto&[fst, snd] : tasks) {
         std::cout << "Task: " << fst << std::endl;
         std::cout << "Start time: " << std::put_time(std::localtime(&snd.first), "%H:%M:%S") << std::endl;
@@ -29,8 +30,8 @@ void showTasks(const std::map<std::string, std::pair<std::time_t, std::time_t>> 
             std::cout << "Task is still running." << std::endl;
         } else {
             std::cout << "End time: " << std::put_time(std::localtime(&snd.second), "%H:%M:%S") << std::endl;
-            auto duration = static_cast<std::time_t>(std::difftime(snd.second, snd.first) - 10800);
-            std::cout << "Duration: " << std::put_time(std::localtime(&duration), "%H:%M:%S") << std::endl;
+            auto duration = snd.second - snd.first;
+            std::cout << "Duration: " << std::put_time(std::gmtime(&duration), "%H:%M:%S") << std::endl;
         }
         std::cout << "---------------------------------------------------------" << std::endl;
     }
@@ -39,8 +40,7 @@ void showTasks(const std::map<std::string, std::pair<std::time_t, std::time_t>> 
 int main() {
     std::map<std::string, std::pair<std::time_t, std::time_t>> tasks;
     std::string cmd;
-    while (true) {
-        std::cin >> cmd;
+    while (std::cin >> cmd) {
         if (cmd == "begin") {
             newTask(tasks);
         } else if (cmd == "end") {
