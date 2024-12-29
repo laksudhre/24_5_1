@@ -1,36 +1,47 @@
+#include <algorithm>
 #include <iostream>
 #include <ctime>
-#include <map>
 #include <iomanip>
+#include <vector>
 
-void endTask(std::map<std::string, std::pair<std::time_t, std::time_t>> &tasks) {
+struct Task {
+    Task() : name(), start(), end() {}
+    std::string name;
+    std::time_t start;
+    std::time_t end;
+};
+
+void endTask(std::vector<Task> &tasks) {
     const std::time_t current_time = std::time(nullptr);
-    tasks.rbegin()->second.second = current_time;
-    std::cout << "Task '" << tasks.rbegin()->first << "' ended." << std::endl;
+    tasks.rbegin()->end = current_time;
+    std::cout << "Task '" << tasks.rbegin()->name << "' ended." << std::endl;
 }
 
-void newTask(std::map<std::string, std::pair<std::time_t, std::time_t>> &tasks) {
+void newTask(std::vector<Task> &tasks) {
+    Task task;
     std::string task_name;
     std::cin >> task_name;
-    if (!tasks.empty() && tasks.rbegin()->second.second == tasks.rbegin()->second.first) {
+    if (!tasks.empty() && tasks.rbegin()->end == tasks.rbegin()->start) {
         endTask(tasks);
     }
     const std::time_t current_time = std::time(nullptr);
-    tasks[task_name].first = current_time;
-    tasks[task_name].second = current_time;
+    task.name = task_name;
+    task.start = current_time;
+    task.end = current_time;
+    tasks.push_back(task);
     std::cout << "Task '" << task_name << "' started." << std::endl;
 }
 
-void showTasks(const std::map<std::string, std::pair<std::time_t, std::time_t>> &tasks) {
+void showTasks(std::vector<Task> &tasks) {
     std::cout << "---------------------------------------------------------" << std::endl;
-    for (const auto&[fst, snd] : tasks) {
-        std::cout << "Task: " << fst << std::endl;
-        std::cout << "Start time: " << std::put_time(std::localtime(&snd.first), "%H:%M:%S") << std::endl;
-        if (snd.second == snd.first) {
+    for (const auto& [name, start, end] : tasks) {
+        std::cout << "Task: " << name << std::endl;
+        std::cout << "Start time: " << std::put_time(std::localtime(&start), "%H:%M:%S") << std::endl;
+        if (end == start) {
             std::cout << "Task is still running." << std::endl;
         } else {
-            std::cout << "End time: " << std::put_time(std::localtime(&snd.second), "%H:%M:%S") << std::endl;
-            auto duration = snd.second - snd.first;
+            std::cout << "End time: " << std::put_time(std::localtime(&end), "%H:%M:%S") << std::endl;
+            auto duration = end - start;
             std::cout << "Duration: " << std::put_time(std::gmtime(&duration), "%H:%M:%S") << std::endl;
         }
         std::cout << "---------------------------------------------------------" << std::endl;
@@ -38,7 +49,7 @@ void showTasks(const std::map<std::string, std::pair<std::time_t, std::time_t>> 
 }
 
 int main() {
-    std::map<std::string, std::pair<std::time_t, std::time_t>> tasks;
+    std::vector<Task> tasks;
     std::string cmd;
     while (std::cin >> cmd) {
         if (cmd == "begin") {
